@@ -1,0 +1,53 @@
+#!/bin/bash
+
+user_program=$1
+user_type=$2
+user_member=$3
+
+dbginfo=$user_program.dbginfo
+
+
+readelf -wi $user_program > $dbginfo
+
+cat $dbginfo | while read struct_tag_line
+do
+    sed -i '1d' $dbginfo
+    struct_tag=`echo $struct_tag_line | grep "DW_TAG_structure_type"`
+    if [ -n "$struct_tag" ];then
+        cat $dbginfo | while read struct_type_line
+        do
+           sed -i '1d' $dbginfo
+           struct_type=`echo $struct_type_line | grep "$user_type"`
+           if [ -n "$struct_type" ];then
+               cat $dbginfo | while read struct_member_tag_line
+               do
+                   sed -i '1d' $dbginfo
+                   struct_member_tag=`echo $struct_member_tag_line | grep "DW_TAG_member"`
+                   if [ -n "$struct_member_tag" ];then
+                       cat $dbginfo | while read struct_member_line
+                       do
+                           sed -i '1d' $dbginfo
+                           if [ -n "$struct_member_line" ];then
+                               struct_member=`echo $struct_member_line |grep "$user_member"`
+                               if [ -n "$struct_member" ];then
+                                   cat $dbginfo | while read struct_member_offset_line
+                                   do
+                                       sed -i '1d' $dbginfo
+                                       offset=`echo $struct_member_offset_line |grep "DW_OP_plus_uconst"`
+                                       if [ -n "$offset" ];then
+                                           echo "$user_member of $user_type offset is : "
+                                           echo $offset | gawk '{print $9}'|sed -e 's/)//g'
+                                           exit 0;
+                                       fi
+                                   done
+                               fi
+                           fi
+                       done
+                   fi
+                done
+            fi
+        done
+    fi
+done
+
+rm -rf $dbginfo
