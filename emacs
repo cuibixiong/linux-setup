@@ -1,24 +1,74 @@
+;; path where settings files are kept
+(add-to-list 'load-path "~/.emacs.d/settings")
+;; path to where plugins are kept
+(setq plugin-path "~/.emacs.d/el-get/")
+
+;; define various custom functions
+(require 'custom-functions)
+
+;; configure general settings
+(require 'general-settings)
+
+;; install dependencies with el-get
+(require 'el-get-settings)
+
+;; yasnippet
+(require 'yasnippet-settings)
+
+;; Auto complete
+(require 'auto-complete-settings)
+
+;; Python mode 
+(require 'python-settings)
+
+;; Javascript
+(require 'js-settings)
+
+;---------------------------------------------------------------------
+;; Put auto 'custom' changes in a separate file (this is stuff like
+;; custom-set-faces and custom-set-variables)
+(load 
+ (setq custom-file (expand-file-name "settings/custom.el" user-emacs-directory))
+ 'noerror)
+
+
 ;;;Shell
 (setq shell-file-name "/bin/bash")
 
 (shell)
-
-(rename-buffer "bbb-shell")
-
-(shell)
-
 (rename-buffer "aaa-shell")
 
 ;;;Font
 ;(set-default-font "9x15")
 ;(set-default-font "courier new-12")
-(set-default-font "Lucida Console 12")
+(set-default-font "Lucida Console 14")
 
-(set-background-color "black")
-
+;(set-background-color "black")
 (set-foreground-color "white")
-
 (set-cursor-color "red")
+
+(require 'package)
+(add-to-list 'package-archives' ("elpa" . "http://tromey.com/elpa/") t)
+(add-to-list 'package-archives'  ("marmalade" . "http://marmalade-repo.org/packages/") t)
+(add-to-list 'package-archives' ("melpa" . "http://melpa.milkbox.net/packages/") t)
+(package-initialize)
+
+(add-to-list 'load-path "~/.emacs.d/elpa/evil")
+(require 'evil)
+(evil-mode 1)
+
+(defun ex-kill-buffer-and-close ()
+  (interactive)
+  (kill-this-buffer))
+
+(defun ex-save-kill-buffer-and-close ()
+  (interactive)
+  (save-buffer)
+  (kill-this-buffer))
+
+
+(evil-ex-define-cmd "q[uit]" 'ex-kill-buffer-and-close)
+(evil-ex-define-cmd "wq"   'ex-save-kill-buffer-and-close)
 
 ;;;Keys
 ;;; VIM # forward search current word
@@ -65,9 +115,6 @@
 (setq ido-save-directory-list-file nil)
 
 ;;;Programing
-(require 'git-emacs)
-
-(global-set-key "%" 'match-paren)
 
 ;;;C-func setting
 ;; For some reason 1) c-backward-syntactic-ws is a macro and 2)  under Emacs 22
@@ -421,10 +468,3 @@ OTHERS is intermediate mark, which can be nil. "
      ;; This puts message in *Message* twice, but minibuffer output
      ;; looks better.
      (message (concat "Wrote " (buffer-file-name))))))
-
-
-
-;;;Remote
-(require 'drkm-fav)
-(setq drkm-fav:favourite-directories-alist
-  '(("home"  . "/mtk81232@mtkslt002:~"))))
