@@ -21,7 +21,7 @@
 (menu-bar-mode 0)
 ; don't show the tool bar
 (require 'tool-bar)
-(tool-bar-mode 0)
+(tool-bar-mode 1)
 ; don't show the scroll bar
 (if window-system (scroll-bar-mode 0))
 
