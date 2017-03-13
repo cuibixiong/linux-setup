@@ -468,3 +468,22 @@ OTHERS is intermediate mark, which can be nil. "
      ;; This puts message in *Message* twice, but minibuffer output
      ;; looks better.
      (message (concat "Wrote " (buffer-file-name))))))
+
+
+(defun list-funcs (arg)
+  "List functions in buffer." 
+  (interactive "p") 
+  (message "functions")
+;;;  (list-matching-lines "^\\bstatic\\b*\\binline\\b*[ ]*[A-Za-z_<>]+[ ]+[A-Za-z0-9_:]+[\(]"))
+  (list-matching-lines "^[A-Za-z0-9_]+[ ]+[A-Za-z0-9_<>: ]*[\(]"))
+
+
+(require 'cedet)
+;;(semantic-load-enable-minimum-features)
+(semantic-load-enable-code-helpers)
+;;(semantic-load-enable-guady-code-helpers)
+;;(semantic-load-enable-excessive-code-helpers)
+(semantic-load-enable-semantic-debugging-helpers)
+
+
+(require 'ecb)
