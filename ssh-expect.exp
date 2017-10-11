@@ -1,0 +1,46 @@
+proc usage {} {
+    puts stderr "usage: $::argv0 username password ipaddress"
+    exit 1
+}
+
+proc connect {pass} {
+   expect {
+       "(yes/no)?" {
+           send "yes\n"
+           expect "*password:" {
+                send "$pass\n"
+                expect {
+                    "*#" {
+                        return 0
+                    }
+                }
+           }
+       }
+       "*password:" {
+           send "$pass\n"
+           expect {
+               "*#" {
+                   return 0
+               }
+           }
+       }
+   }
+   return 1
+}
+
+if {$argc != 4} { usage }
+
+set username [lindex $argv 0]
+set password [lindex $argv 1]
+set hostip [lindex $argv 2]
+set port [lindex $argv 3]
+
+spawn ssh ${username}@${hostip} -p ${port}
+
+if {[connect $password]} {
+    exit 1
+}
+
+send "rm -f /root/testeric;rm -f pattern_file\n"
+send "exit\n"
+expect eof
