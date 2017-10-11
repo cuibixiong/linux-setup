@@ -1,0 +1,1 @@
+expect -f ~/work/bin/expect-ssh.exp router 1qaz3edc 59.108.66.230 2200
