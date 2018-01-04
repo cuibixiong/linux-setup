@@ -1,51 +1,13 @@
-;; path where settings files are kept
-(add-to-list 'load-path "~/.emacs.d/settings")
-;; path to where plugins are kept
-(setq plugin-path "~/.emacs.d/el-get/")
-
-;; define various custom functions
-(require 'custom-functions)
-
-;; configure general settings
-(require 'general-settings)
-
-;; install dependencies with el-get
-(require 'el-get-settings)
-
-;; yasnippet
-(require 'yasnippet-settings)
-
-;; Auto complete
-(require 'auto-complete-settings)
-
-;; Python mode 
-(require 'python-settings)
-
-;; Javascript
-(require 'js-settings)
-
-;---------------------------------------------------------------------
-;; Put auto 'custom' changes in a separate file (this is stuff like
-;; custom-set-faces and custom-set-variables)
-(load 
- (setq custom-file (expand-file-name "settings/custom.el" user-emacs-directory))
- 'noerror)
-
-
-;;;Shell
-(setq shell-file-name "/bin/bash")
-
 (shell)
 (rename-buffer "aaa-shell")
+(shell)
+(rename-buffer "bbb-shell")
 
-;;;Font
-;(set-default-font "9x15")
-;(set-default-font "courier new-12")
-(set-default-font "Lucida Console 14")
-
-;(set-background-color "black")
+(set-background-color "black")
 (set-foreground-color "white")
 (set-cursor-color "red")
+;(set-default-font "-*-Monaco-normal-normal-normal-*-14-*-*-*-m-0-iso10646-1")
+; Packets initialize
 
 (require 'package)
 (add-to-list 'package-archives' ("elpa" . "http://tromey.com/elpa/") t)
@@ -53,68 +15,34 @@
 (add-to-list 'package-archives' ("melpa" . "http://melpa.milkbox.net/packages/") t)
 (package-initialize)
 
-(add-to-list 'load-path "~/.emacs.d/elpa/evil")
+(add-to-list 'load-path "~/.emacs.d/evil")
 (require 'evil)
 (evil-mode 1)
 
-(defun ex-kill-buffer-and-close ()
-  (interactive)
-  (kill-this-buffer))
+(add-to-list 'load-path "~/path-to-yasnippet")
+(require 'yasnippet)
+(yas-global-mode 1)
 
-(defun ex-save-kill-buffer-and-close ()
-  (interactive)
-  (save-buffer)
-  (kill-this-buffer))
+(add-to-list 'load-path "~/.emacs.d/elpa/auto-complete-clang-20140409.52/")
+(require 'auto-complete-config)
+(add-to-list 'ac-dictionary-directories "~/.emacs.d/elpa/auto-complete-clang-20140409.52//dict")
+(ac-config-default)
 
+(require 'auto-complete-c-headers)
+(add-to-list 'ac-sources 'ac-source-c-headers)
 
-(evil-ex-define-cmd "q[uit]" 'ex-kill-buffer-and-close)
-(evil-ex-define-cmd "wq"   'ex-save-kill-buffer-and-close)
-
-;;;Keys
-;;; VIM # forward search current word
-(defun isearch-cur-word (fun)
-  "ISearch current word use function FUN."
-  (let ((cur-word (current-word)))
-    (if (not cur-word)
-        (message "No word under cursor.")
-      (call-interactively fun)
-      (isearch-yank-string cur-word))))
- 
-(defun isearch-forward-cur-word (&optional backward)
-  "`isearch-forward' current word."
-  (interactive "P")
-  (let ((fun (if backward 'isearch-backward 'isearch-forward)))
-    (isearch-cur-word fun)))
-
-;;; Vim % match paren
-(defun match-paren (arg)
-  "Go to the matching paren if on a paren; otherwise insert %."
-  (interactive "p")
-  (cond ((looking-at "\\s\(") (forward-list 1) (backward-char 1))
-	((looking-at "\\s\)") (forward-char 1) (backward-list 1))
-	(t (self-insert-command (or arg 1)))))
-
-
-(global-set-key [f8] 'kill-buffer)
-(global-set-key [Esc] 'exit-minibuffer)
-(global-set-key [f12] 'switch-to-buffer)
-(global-set-key [f11] 'distraction-mode) 
 (global-set-key [(control a)] 'mark-whole-buffer)
 (global-set-key [(control k)] 'kill-whole-line)
 (global-set-key [(control u)] 'undo)
-(global-set-key [(meta l)] 'list-buffers)
-(global-set-key [(meta g)] 'goto-line)
-(global-set-key [f9] 'indent-region)
 (global-set-key [(control ?])] 'find-tag)
 (global-set-key [(control t)] 'pop-tag-mark)
+(global-set-key [f12] 'switch-to-buffer)
+(global-set-key [f8] 'kill-buffer)
 (fset 'yes-or-no-p 'y-or-n-p)
-(hl-line-mode t)
-(ido-mode t)
 (setq cua-mode t)
 (setq x-select-enable-clipboard t)
-(setq ido-save-directory-list-file nil)
 
-;;;Programing
+;;;(global-set-key "%" 'match-paren)
 
 ;;;C-func setting
 ;; For some reason 1) c-backward-syntactic-ws is a macro and 2)  under Emacs 22
@@ -227,6 +155,7 @@ Suitable for inclusion in `c-offsets-alist'."
   (define-key c-mode-base-map [ret] 'newline-and-indent))
 
 (provide 'google-c-style)
+(require 'google-c-style)  
 ;;; google-c-style.el ends here
 
 (defconst linux-c-style
@@ -470,20 +399,38 @@ OTHERS is intermediate mark, which can be nil. "
      (message (concat "Wrote " (buffer-file-name))))))
 
 
-(defun list-funcs (arg)
-  "List functions in buffer." 
-  (interactive "p") 
-  (message "functions")
-;;;  (list-matching-lines "^\\bstatic\\b*\\binline\\b*[ ]*[A-Za-z_<>]+[ ]+[A-Za-z0-9_:]+[\(]"))
-  (list-matching-lines "^[A-Za-z0-9_]+[ ]+[A-Za-z0-9_<>: ]*[\(]"))
+(add-to-list 'load-path "~/.emacs.d/elpa/helm")
 
+;; Load Helm packages
+(require 'helm)
+(require 'helm-config)
+(require 'helm-eshell)
+(require 'helm-files)
+(require 'helm-grep)
 
-(require 'cedet)
-;;(semantic-load-enable-minimum-features)
-(semantic-load-enable-code-helpers)
-;;(semantic-load-enable-guady-code-helpers)
-;;(semantic-load-enable-excessive-code-helpers)
-(semantic-load-enable-semantic-debugging-helpers)
+;; The default "C-x c" is quite close to "C-x C-c", which quits Emacs.
+;; Changed to "C-c h". Note: We must set "C-c h" globally, because we
+;; cannot change `helm-command-prefix-key' once `helm-config' is loaded.
+(global-set-key (kbd "C-c h") 'helm-command-prefix)
+(global-unset-key (kbd "C-x c"))
 
+(define-key helm-map (kbd "<tab>") 'helm-execute-persistent-action) ; rebihnd tab to do persistent action
+(define-key helm-map (kbd "C-i") 'helm-execute-persistent-action) ; make TAB works in terminal
+(define-key helm-map (kbd "C-z")  'helm-select-action) ; list actions using C-z
 
-(require 'ecb)
+(define-key helm-grep-mode-map (kbd "<return>")  'helm-grep-mode-jump-other-window)
+(define-key helm-grep-mode-map (kbd "n")  'helm-grep-mode-jump-other-window-forward)
+(define-key helm-grep-mode-map (kbd "p")  'helm-grep-mode-jump-other-window-backward)
+
+(when (executable-find "curl")
+  (setq helm-google-suggest-use-curl-p t))
+
+(setq helm-quick-update                     t ; do not display invisible candidates
+      helm-split-window-in-side-p           t ; open helm buffer inside current window, not occupy whole other window
+      helm-buffers-fuzzy-matching           t ; fuzzy matching buffer names when non--nil
+      helm-move-to-line-cycle-in-source     t ; move to end or beginning of source when reaching top or bottom of source.
+      helm-ff-search-library-in-sexp        t ; search for library in `require' and `declare-function' sexp.
+      helm-scroll-amount                    8 ; scroll 8 lines other window using M-<next>/M-<prior>
+      helm-ff-file-name-history-use-recentf t)
+
+(helm-mode 1)
