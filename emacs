@@ -3,33 +3,11 @@
 (shell)
 (rename-buffer "bbb-shell")
 
-(set-background-color "black")
-(set-foreground-color "white")
 (set-cursor-color "red")
-;(set-default-font "-*-Monaco-normal-normal-normal-*-14-*-*-*-m-0-iso10646-1")
-; Packets initialize
 
-(require 'package)
-(add-to-list 'package-archives' ("elpa" . "http://tromey.com/elpa/") t)
-(add-to-list 'package-archives'  ("marmalade" . "http://marmalade-repo.org/packages/") t)
-(add-to-list 'package-archives' ("melpa" . "http://melpa.milkbox.net/packages/") t)
-(package-initialize)
-
-(add-to-list 'load-path "~/.emacs.d/evil")
+(add-to-list 'load-path "~/.emacs.d/elpa/evil-20180103.2356/")
 (require 'evil)
 (evil-mode 1)
-
-(add-to-list 'load-path "~/path-to-yasnippet")
-(require 'yasnippet)
-(yas-global-mode 1)
-
-(add-to-list 'load-path "~/.emacs.d/elpa/auto-complete-clang-20140409.52/")
-(require 'auto-complete-config)
-(add-to-list 'ac-dictionary-directories "~/.emacs.d/elpa/auto-complete-clang-20140409.52//dict")
-(ac-config-default)
-
-(require 'auto-complete-c-headers)
-(add-to-list 'ac-sources 'ac-source-c-headers)
 
 (global-set-key [(control a)] 'mark-whole-buffer)
 (global-set-key [(control k)] 'kill-whole-line)
@@ -42,7 +20,7 @@
 (setq cua-mode t)
 (setq x-select-enable-clipboard t)
 
-;;;(global-set-key "%" 'match-paren)
+(global-set-key "%" 'match-paren)
 
 ;;;C-func setting
 ;; For some reason 1) c-backward-syntactic-ws is a macro and 2)  under Emacs 22
@@ -315,30 +293,20 @@ OTHERS is intermediate mark, which can be nil. "
 (when (fboundp 'winner-mode) 
 (winner-mode) 
 (windmove-default-keybindings)) 
-
 (setq frame-title-format "cuibixiong@%b") 
-
 (setq inhibit-startup-message t)
-
 (setq make-backup-files nil)
-
 (setq auto-save-mode nil)
-
 (setq column-number-mode t)
-
 (setq display-time-24hr-format t)
-
 (setq display-time-day-and-date t)
-
 (global-cwarn-mode 1)
-
 (ansi-color-for-comint-mode-on)
 
 (require 'uniquify)
 (setq uniquify-buffer-name-style 'forward)
 
 (setq kill-ring-max 200)
-
 (defun distraction-mode ()
 (interactive)
 (x-send-client-message nil 0 nil "_NET_WM_STATE" 32 '(2 "_NET_WM_STATE_FULLSCREEN" 0))
@@ -354,7 +322,6 @@ OTHERS is intermediate mark, which can be nil. "
   "unix2dos on current buffer."
   (interactive)
   (set-buffer-file-coding-system 'dos))
-
 
 ;(defun make-some-files-read-only ()
 ;  "when file opened is of a certain mode, make it read only"
@@ -399,7 +366,9 @@ OTHERS is intermediate mark, which can be nil. "
      (message (concat "Wrote " (buffer-file-name))))))
 
 
-(add-to-list 'load-path "~/.emacs.d/elpa/helm")
+(add-to-list 'load-path "~/.emacs.d/elpa/helm-20180103.1013/")
+(add-to-list 'load-path ".emacs.d/elpa/helm-core-20180105.2359/")
+(add-to-list 'load-path ".emacs.d/elpa/async-20180103.2312/")
 
 ;; Load Helm packages
 (require 'helm)
@@ -432,5 +401,118 @@ OTHERS is intermediate mark, which can be nil. "
       helm-ff-search-library-in-sexp        t ; search for library in `require' and `declare-function' sexp.
       helm-scroll-amount                    8 ; scroll 8 lines other window using M-<next>/M-<prior>
       helm-ff-file-name-history-use-recentf t)
+
+(setq package-archives '(("gnu"   . "http://mirrors.tuna.tsinghua.edu.cn/elpa/gnu/")
+			             ("melpa" . "http://mirrors.tuna.tsinghua.edu.cn/elpa/melpa/")))
+(package-initialize) ;; You might already have this line
+
+(add-to-list 'default-frame-alist
+             '(font . "Menlo-13"))
+(require 'ag)
+
+(global-set-key [home]  'beginning-of-line)
+(global-set-key [end]  'end-of-line)
+
+(require 'irony)
+(add-hook 'c++-mode-hook 'irony-mode)
+(add-hook 'c-mode-hook 'irony-mode)
+(add-hook 'objc-mode-hook 'irony-mode)
+
+;; replace the `completion-at-point' and `complete-symbol' bindings in
+;; irony-mode's buffers by irony-mode's function
+(defun my-irony-mode-hook ()
+  (define-key irony-mode-map [remap completion-at-point]
+    'irony-completion-at-point-async)
+  (define-key irony-mode-map [remap complete-symbol]
+    'irony-completion-at-point-async))
+(add-hook 'irony-mode-hook 'my-irony-mode-hook)
+(add-hook 'irony-mode-hook 'irony-cdb-autosetup-compile-options)
+
+(require 'company-irony-c-headers)
+(eval-after-load 'company
+  '(add-to-list
+    'company-backends '(company-irony-c-headers company-irony)))
+
+(require 'company)
+(add-hook 'after-init-hook 'global-company-mode)
+(add-hook 'c++-mode-hook 'global-company-mode)
+(define-key company-mode-map (kbd "C-c c") 'company-complete)
+(setq company-idle-delay              nil
+	company-minimum-prefix-length   2
+	company-show-numbers            t
+	company-tooltip-limit           20
+	company-dabbrev-downcase        nil
+	company-backends                '((company-irony company-gtags)))
+
+(font-lock-add-keywords
+ 'c-mode
+ '(("\\<\\(\\sw+\\)(" 1 'font-lock-function-name-face)))
+
+;; Helm
+(require 'helm-config)
+(helm-mode 1)
+(define-key helm-map (kbd "<tab>") 'helm-execute-persistent-action) ; rebind tab to run persistent action
+(define-key helm-map (kbd "C-i") 'helm-execute-persistent-action) ; make TAB work in terminal
+(define-key helm-map (kbd "C-z")  'helm-select-action) ; list actions using C-z
+(global-set-key (kbd "M-x") 'helm-M-x)
+(global-set-key (kbd "C-x b") 'helm-mini)
+(global-set-key (kbd "C-x C-f") 'helm-find-files)
+(global-set-key (kbd "C-c f") 'helm-occur)
+(setq helm-quick-update                     t
+      helm-split-window-in-side-p           t
+      helm-buffers-fuzzy-matching           t
+      helm-move-to-line-cycle-in-source     t
+      helm-ff-search-library-in-sexp        t
+      helm-scroll-amount                    8
+      helm-ff-file-name-history-use-recentf t)
+
+(require 'helm-gtags)
+(setq helm-gtags-ignore-case t
+      helm-gtags-auto-update t
+      helm-gtags-use-input-at-cursor t
+      helm-gtags-pulse-at-cursor t
+      helm-gtags-prefix-key "\C-cg"
+      helm-gtags-suggested-key-mapping t)
+(add-hook 'dired-mode-hook 'helm-gtags-mode)
+(add-hook 'eshell-mode-hook 'helm-gtags-mode)
+(add-hook 'c-mode-hook 'helm-gtags-mode)
+(add-hook 'c++-mode-hook 'helm-gtags-mode)
+(add-hook 'asm-mode-hook 'helm-gtags-mode)
+(define-key helm-gtags-mode-map (kbd "C-c g a") 'helm-gtags-tags-in-this-function)
+(define-key helm-gtags-mode-map (kbd "M-s") 'helm-gtags-select)
+(define-key helm-gtags-mode-map (kbd "M-.") 'helm-gtags-dwim)
+(define-key helm-gtags-mode-map (kbd "M-,") 'helm-gtags-pop-stack)
+(define-key helm-gtags-mode-map (kbd "C-,") 'helm-gtags-previous-history)
+(define-key helm-gtags-mode-map (kbd "C-.") 'helm-gtags-next-history)
+
+(projectile-global-mode)
+(setq projectile-completion-system 'helm)
+
+(global-set-key [f5] 'helm-do-ag)
+(global-set-key [f6] 'projectile-ag)
+
+(require 'windmove) ;; help to move among windows
+(global-set-key (kbd "C-c j")  'windmove-left)
+(global-set-key (kbd "C-c l") 'windmove-right)
+(global-set-key (kbd "C-c i") 'windmove-up)
+(global-set-key (kbd "C-c k") 'windmove-down)
+
+ ;; Highlight
+;(require 'highlight-symbol)
+;(add-hook 'prog-mode-hook (lambda () (highlight-symbol-mode)))
+;(setq highlight-symbol-on-navigation-p t)
+;(global-set-key (kbd "M-n") 'highlight-symbol-next)
+;(global-set-key (kbd "C-c h") 'highlight-symbol-at-point)
+;(global-set-key (kbd "M-p") 'highlight-symbol-prev)
+;(require 'rainbow-delimiters)
+;(add-hook 'prog-mode-hook 'rainbow-delimiters-mode)
+;(require 'rainbow-identifiers)
+;(add-hook 'prog-mode-hook 'rainbow-identifiers-mode)
+;(font-lock-add-keywords
+;'c-mode
+;'(("\\<\\(\\sw+\\)(" 1 'font-lock-function-name-face)))
+
+;(require 'magit)
+;(global-set-key (kbd "C-x g") 'magit-status)
 
 (helm-mode 1)
